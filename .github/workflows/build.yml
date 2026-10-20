@@ -39,14 +39,22 @@ jobs:
             openjdk-17-jdk
 
 
+      
       - name: Sync OrangeFox sources
+        shell: bash
         run: |
+          set -euo pipefail
+
+          export PATH="$HOME/bin:$PATH"
+
+          echo "=== Verify repo launcher ==="
+          command -v repo
+          repo version
+
           mkdir -p "$HOME/OrangeFox_sync"
           cd "$HOME/OrangeFox_sync"
 
-          git clone \
-            https://gitlab.com/OrangeFox/sync.git
-
+          git clone https://gitlab.com/OrangeFox/sync.git
           cd sync
 
           ./orangefox_sync.sh \
