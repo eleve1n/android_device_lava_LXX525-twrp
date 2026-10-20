@@ -1,0 +1,39 @@
+
+name: Build OrangeFox Recovery - LXX525
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build OrangeFox for LXX525
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout workflow repository
+        uses: actions/checkout@v4
+
+      - name: Build OrangeFox
+        uses: kinguser981/OrangeFox-Recovery-Builder-2024@main
+        with:
+          MANIFEST_BRANCH: '12.1'
+          DEVICE_TREE_URL: 'https://github.com/eleve1n/android_device_lava_LXX525-twrp.git'
+          DEVICE_TREE_BRANCH: 'android-12.1'
+          DEVICE_PATH: 'device/lava/LXX525'
+          DEVICE_NAME: 'LXX525'
+          DEVICE_MAKEFILE: 'omni_LXX525.mk'
+          BUILD_TARGET: 'boot'
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-LXX525
+          path: |
+            **/out/target/product/LXX525/*.img
+            **/out/target/product/LXX525/*.zip
+          if-no-files-found: warn
+          retention-days: 7
