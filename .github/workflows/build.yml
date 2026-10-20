@@ -1,5 +1,5 @@
 
-name: OrangeFox LXX525 Build
+name: Build OrangeFox Recovery - Lava LXX525
 
 on:
   workflow_dispatch:
@@ -13,6 +13,16 @@ jobs:
     timeout-minutes: 360
 
     steps:
+      - name: Free and expand build storage
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 8192
+          remove-dotnet: true
+          remove-android: true
+          remove-haskell: true
+          remove-codeql: true
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -24,9 +34,10 @@ jobs:
             libxml2-utils xsltproc unzip fontconfig \
             python3 python-is-python3 rsync ccache \
             bc bzip2 lz4 pngcrush squashfs-tools \
+            schedtool libssl-dev libelf-dev \
             openjdk-17-jdk
 
-      - name: Install repo
+      - name: Install repo tool
         run: |
           mkdir -p "$HOME/bin"
           curl -fsSL \
@@ -35,28 +46,110 @@ jobs:
           chmod +x "$HOME/bin/repo"
           echo "$HOME/bin" >> "$GITHUB_PATH"
 
-      - name: Checkout device tree
+      - name: Sync OrangeFox sources
         run: |
+          mkdir -p "$HOME/OrangeFox_sync"
+          cd "$HOME/OrangeFox_sync"
+
+          git clone \
+            https://gitlab.com/OrangeFox/sync.git
+
+          cd sync
+
+          ./orangefox_sync.sh \
+            --branch 12.1 \
+            --path "$HOME/fox_12.1"
+
+      - name: Clone LXX525 device tree
+        run: |
+          cd "$HOME/fox_12.1"
+
+          mkdir -p device/lava
+
           git clone \
             --depth=1 \
             -b android-12.1 \
             https://github.com/eleve1n/android_device_lava_LXX525-twrp.git \
             device/lava/LXX525
 
-      - name: Check device configuration
+      - name: Validate device files
         run: |
-          cd device/lava/LXX525
-          echo "Device tree files:"
-          ls -la
-          echo "Product configuration:"
-          cat AndroidProducts.mk
-          echo "Board configuration:"
-          cat BoardConfig.mk
-          echo "Prebuilt files:"
-          find prebuilt -maxdepth 2 -type f -print
+          cd "$HOME/fox_12.1"
 
-      - name: Report build status
+          echo "=== Device makefiles ==="
+          find device/lava/LXX525 -maxdepth 2 \
+            -type f -name '*.mk' -print
+
+          echo "=== Kernel and DTB ==="
+          find device/lava/LXX525/prebuilt \
+            -maxdepth 2 -type f -print
+
+          test -f device/lava/LXX525/BoardConfig.mk
+
+          echo "=== Relevant configuration ==="
+          grep -nE \
+            'BOARD_USES_RECOVERY_AS_BOOT|BOARD_BOOT_HEADER_VERSION|TARGET_PREBUILT_KERNEL|TARGET_PREBUILT_DTB' \
+            device/lava/LXX525/BoardConfig.mk || true
+
+      - name: Build OrangeFox
+        shell: bash
         run: |
-          echo "Device-tree inspection completed."
-          echo "OrangeFox manifest and product port must be configured"
-          echo "before a recovery image can be built."
+          set -eo pipefail
+
+          cd "$HOME/fox_12.1"
+
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export LC_ALL=C
+          export FOX_BUILD_DEVICE=LXX525
+          export OF_FORCE_PREBUILT_KERNEL=1
+          export USE_CCACHE=1
+          export CCACHE_EXEC=/usr/bin/ccache
+
+          ccache -M 4G
+
+          source build/envsetup.sh
+
+          echo "=== Available device products ==="
+          find device/lava/LXX525 \
+            -maxdepth 2 -type f \
+            \( -name '*LXX525*.mk' -o -name 'AndroidProducts.mk' \) \
+            -print
+
+          # The existing tree has omni_LXX525.mk.
+          # Stop if the required OrangeFox/TWRP product
+          # target has not been ported or registered.
+          if [ ! -f device/lava/LXX525/fox_LXX525.mk ] && \
+             [ ! -f device/lava/LXX525/twrp_LXX525.mk ]; then
+            echo "::error::No fox_LXX525.mk or twrp_LXX525.mk found."
+            echo "Port/register the device product before building."
+            exit 1
+          fi
+
+          lunch twrp_LXX525-eng
+
+          # This device tree indicates recovery-as-boot.
+          # Confirm the actual partition layout before using
+          # this image on the phone.
+          mka adbd bootimage
+
+      - name: Collect build artifacts
+        if: always()
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts"
+
+          if [ -d "$HOME/fox_12.1/out/target/product/LXX525" ]; then
+            find "$HOME/fox_12.1/out/target/product/LXX525" \
+              -maxdepth 2 -type f \
+              \( -name '*.img' -o -name '*.zip' \
+                 -o -name '*.tar' \) \
+              -exec cp -v {} "$GITHUB_WORKSPACE/artifacts/" \;
+          fi
+
+      - name: Upload recovery artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-LXX525
+          path: artifacts/*
+          if-no-files-found: warn
+          retention-days: 7
