@@ -7,8 +7,9 @@
 
 PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/omni_LXX525.mk
+    $(LOCAL_DIR)/pb_LXX525.mk
 
 COMMON_LUNCH_CHOICES := \
-    omni_LXX525-eng \
+    pb_LXX525-eng \
     omni_LXX525-userdebug \
     omni_LXX525-user
