@@ -71,6 +71,7 @@ jobs:
          ls -la device/lava/LXX525/recovery/
          ls -la device/lava/LXX525/recovery/root/
 
+      
       - name: Build Recovery
         run: |
           cd pbrp
@@ -78,23 +79,29 @@ jobs:
           export LC_ALL=C
 
           source build/envsetup.sh
-
           lunch pb_LXX525-eng
+
           echo "===== RECOVERY BUILD DIAGNOSTICS ====="
 
-for var in \
-    BOARD_USES_RECOVERY_AS_BOOT \
-    BOARD_BUILD_SYSTEM_ROOT_IMAGE \
-    TARGET_ROOT_OUT \
-    TARGET_RECOVERY_ROOT_OUT \
-    INSTALLED_RAMDISK_TARGET \
-    BUILDING_RECOVERY_IMAGE
-do
-    echo "$var = $(get_build_var "$var")"
-done
+          for var in \
+            BOARD_USES_RECOVERY_AS_BOOT \
+            BOARD_BUILD_SYSTEM_ROOT_IMAGE \
+            TARGET_ROOT_OUT \
+            TARGET_RECOVERY_ROOT_OUT \
+            INSTALLED_RAMDISK_TARGET \
+            BUILDING_RECOVERY_IMAGE
+          do
+            echo "$var = $(get_build_var "$var")"
+          done
 
-echo "===== OUTPUT DIRECTORIES ====="
-ls -lah out/target/product/LXX525/
+          echo "===== OUTPUT DIRECTORIES ====="
+          ls -lah out/target/product/LXX525/
+
+          echo "===== ROOT DIRECTORY CHECK ====="
+          find out/target/product/LXX525 -maxdepth 2 \
+            -type d \( -name root -o -name ramdisk -o -name recovery \)
+
+          mka pbrp -j2
 
 echo "===== ROOT DIRECTORY CHECK ====="
 find out/target/product/LXX525 -maxdepth 2 \
