@@ -75,41 +75,8 @@ jobs:
 
           source build/envsetup.sh
           lunch pb_LXX525-eng
-
-          echo "===== BUILD ENVIRONMENT ====="
-          pwd
-          echo "OUT_DIR=$OUT_DIR"
-          echo "ANDROID_PRODUCT_OUT=$ANDROID_PRODUCT_OUT"
-          echo "TARGET_PRODUCT=$TARGET_PRODUCT"
-
-          echo "===== RECOVERY BUILD DIAGNOSTICS ====="
-          for var in \
-            BOARD_USES_RECOVERY_AS_BOOT \
-            BOARD_BUILD_SYSTEM_ROOT_IMAGE \
-            TARGET_ROOT_OUT \
-            TARGET_RECOVERY_ROOT_OUT \
-            INSTALLED_RAMDISK_TARGET \
-            BUILDING_RECOVERY_IMAGE
-          do
-            echo "$var = $(get_build_var "$var")"
-          done
-
-          echo "===== BUILD ====="
-          set +e
-          mka pbrp -j2
-          BUILD_STATUS=$?
-          set -e
-
-          echo "===== ROOT CONTENTS ====="
-          find out/target/product/LXX525/root -maxdepth 3 -ls 2>&1 || true
-
-          echo "===== RAMDISK CONTENTS ====="
-          find out/target/product/LXX525/ramdisk -maxdepth 3 -ls 2>&1 || true
-
-          echo "===== RECOVERY ROOT CONTENTS ====="
-          find out/target/product/LXX525/recovery/root -maxdepth 2 -ls 2>&1 || true
-
-          exit "$BUILD_STATUS"
+          mka bootimage 
+          
 
       - name: Upload Recovery
         if: success()
