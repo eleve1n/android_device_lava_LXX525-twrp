@@ -101,6 +101,18 @@ jobs:
           find out/target/product/LXX525 -maxdepth 2 \
             -type d \( -name root -o -name ramdisk -o -name recovery \)
 
+echo "===== BUILD ENVIRONMENT ====="
+pwd
+echo "OUT_DIR=$OUT_DIR"
+echo "ANDROID_PRODUCT_OUT=$ANDROID_PRODUCT_OUT"
+echo "TARGET_PRODUCT=$TARGET_PRODUCT"
+
+echo "===== OUTPUT LOCATION ====="
+find . -maxdepth 5 -type d -path "*/out/target/product/LXX525" 2>/dev/null
+
+echo "===== PRODUCT DIRECTORY ====="
+ls -lah out/target/product/ 2>/dev/null || true
+
           mka pbrp -j2
 
       - name: Upload Recovery
