@@ -73,8 +73,8 @@ jobs:
 
       
       
-        - name: Build Recovery
-          run: |
+              - name: Build Recovery
+        run: |
           cd pbrp
           export ALLOW_MISSING_DEPENDENCIES=true
           export LC_ALL=C
@@ -89,7 +89,6 @@ jobs:
           echo "TARGET_PRODUCT=$TARGET_PRODUCT"
 
           echo "===== RECOVERY BUILD DIAGNOSTICS ====="
-
           for var in \
             BOARD_USES_RECOVERY_AS_BOOT \
             BOARD_BUILD_SYSTEM_ROOT_IMAGE \
@@ -113,22 +112,11 @@ jobs:
           echo "===== RAMDISK CONTENTS ====="
           find out/target/product/LXX525/ramdisk -maxdepth 3 -ls 2>&1 || true
 
-                    echo "===== BUILD ====="
-          set +e
-          mka pbrp -j2
-          BUILD_STATUS=$?
-          set -e
-
-          echo "===== ROOT CONTENTS ====="
-          find out/target/product/LXX525/root -maxdepth 3 -ls 2>&1 || true
-
-          echo "===== RAMDISK CONTENTS ====="
-          find out/target/product/LXX525/ramdisk -maxdepth 3 -ls 2>&1 || true
-
           echo "===== RECOVERY ROOT CONTENTS ====="
           find out/target/product/LXX525/recovery/root -maxdepth 2 -ls 2>&1 || true
 
           exit "$BUILD_STATUS"
+
 
       - name: Upload Recovery
         if: success()
