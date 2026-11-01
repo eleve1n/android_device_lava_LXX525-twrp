@@ -109,6 +109,18 @@ jobs:
             -type d \( -name root -o -name ramdisk -o -name recovery \) || true
 
           mka pbrp -j2
+BUILD_STATUS=$?
+
+echo "===== ROOT CONTENTS ====="
+find out/target/product/LXX525/root -maxdepth 3 -ls 2>&1
+
+echo "===== RAMDISK CONTENTS ====="
+find out/target/product/LXX525/ramdisk -maxdepth 3 -ls 2>&1
+
+echo "===== RECOVERY ROOT CONTENTS ====="
+find out/target/product/LXX525/recovery/root -maxdepth 2 -ls 2>&1
+
+exit $BUILD_STATUS
 
       - name: Upload Recovery
         if: success()
