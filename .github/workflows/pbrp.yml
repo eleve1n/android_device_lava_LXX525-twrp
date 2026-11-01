@@ -64,12 +64,12 @@ jobs:
             pbrp/device/lava/LXX525/
 
       - name: Debug recovery directories
-  run: |
-    ls -la out/target/product/LXX525/ || true
-    ls -la out/target/product/LXX525/root || true
-    ls -la out/target/product/LXX525/ramdisk || true
-    ls -la device/lava/LXX525/recovery/
-    ls -la device/lava/LXX525/recovery/root/
+        run: |
+         ls -la out/target/product/LXX525/ || true
+         ls -la out/target/product/LXX525/root || true
+         ls -la out/target/product/LXX525/ramdisk || true
+         ls -la device/lava/LXX525/recovery/
+         ls -la device/lava/LXX525/recovery/root/
 
       - name: Build Recovery
         run: |
