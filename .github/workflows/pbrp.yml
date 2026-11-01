@@ -67,7 +67,7 @@ jobs:
           ls -lah out/target/product/LXX525/ || true
           ls -lah device/lava/LXX525/recovery/ || true
 
-      
+            
       - name: Build Boot Image
         run: |
           cd pbrp
@@ -77,8 +77,11 @@ jobs:
           source build/envsetup.sh
           lunch pb_LXX525-eng
 
-                    echo "===== BUILD BOOT IMAGE ====="
-          mka bootimage -j2 || BUILD_STATUS=$?
+          # Workaround for AOSP/PBRP Android 12.1 root rsync bug
+          mkdir -p out/target/product/LXX525/root
+
+          echo "===== BUILD BOOT IMAGE ====="
+          mka bootimage -j$(nproc --all) || BUILD_STATUS=$?
 
           echo "===== POST-BUILD CONFIG ====="
           for var in \
@@ -101,6 +104,7 @@ jobs:
           ls -lh out/target/product/LXX525/boot.img 2>&1 || true
 
           exit ${BUILD_STATUS:-0}
+
 
           
 
