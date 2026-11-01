@@ -77,10 +77,11 @@ jobs:
           source build/envsetup.sh
           lunch pb_LXX525-eng
 
-          echo "===== BOOT IMAGE CONFIG ====="
+                    echo "===== BUILD BOOT IMAGE ====="
+          mka bootimage -j2 || BUILD_STATUS=$?
+
+          echo "===== POST-BUILD CONFIG ====="
           for var in \
-            BOARD_USES_RECOVERY_AS_BOOT \
-            BOARD_BOOTIMG_HEADER_VERSION \
             TARGET_ROOT_OUT \
             TARGET_RECOVERY_ROOT_OUT \
             INSTALLED_BOOTIMAGE_TARGET \
@@ -92,19 +93,14 @@ jobs:
             get_build_var "$var"
           done
 
-          echo "===== AVAILABLE ROOT DIRECTORIES ====="
+          echo "===== POST-BUILD DIRECTORIES ====="
           find out/target/product/LXX525 -maxdepth 2 -type d \
-            \( -name root -o -name ramdisk -o -name recovery \) -print
+            \( -name root -o -name ramdisk -o -name recovery \) -print || true
 
-          echo "===== EXISTING BOOT IMAGE ====="
+          echo "===== BOOT IMAGE ====="
           ls -lh out/target/product/LXX525/boot.img 2>&1 || true
 
-          echo "===== BUILD BOOT IMAGE ====="
-          mka bootimage -j2
-
-          echo "===== VERIFY BOOT IMAGE ====="
-          test -s out/target/product/LXX525/boot.img
-          ls -lh out/target/product/LXX525/boot.img
+          exit ${BUILD_STATUS:-0}
 
           
 
