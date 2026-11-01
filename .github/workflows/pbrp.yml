@@ -67,7 +67,8 @@ jobs:
           ls -lah out/target/product/LXX525/ || true
           ls -lah device/lava/LXX525/recovery/ || true
 
-      - name: Build Recovery
+      
+      - name: Build Boot Image
         run: |
           cd pbrp
           export ALLOW_MISSING_DEPENDENCIES=true
@@ -75,28 +76,36 @@ jobs:
 
           source build/envsetup.sh
           lunch pb_LXX525-eng
-echo "===== BOOT IMAGE CONFIG ====="
-for var in \
-  BOARD_USES_RECOVERY_AS_BOOT \
-  BOARD_BOOTIMG_HEADER_VERSION \
-  TARGET_ROOT_OUT \
-  TARGET_RECOVERY_ROOT_OUT \
-  INSTALLED_BOOTIMAGE_TARGET \
-  INSTALLED_RECOVERYIMAGE_TARGET \
-  INSTALLED_RAMDISK_TARGET \
-  INTERNAL_ROOT_FILES
-do
-  echo "----- $var -----"
-  get_build_var "$var"
-done
 
-echo "===== AVAILABLE ROOT DIRECTORIES ====="
-find out/target/product/LXX525 -maxdepth 2 -type d \
-  \( -name root -o -name ramdisk -o -name recovery \) -print
+          echo "===== BOOT IMAGE CONFIG ====="
+          for var in \
+            BOARD_USES_RECOVERY_AS_BOOT \
+            BOARD_BOOTIMG_HEADER_VERSION \
+            TARGET_ROOT_OUT \
+            TARGET_RECOVERY_ROOT_OUT \
+            INSTALLED_BOOTIMAGE_TARGET \
+            INSTALLED_RECOVERYIMAGE_TARGET \
+            INSTALLED_RAMDISK_TARGET \
+            INTERNAL_ROOT_FILES
+          do
+            echo "----- $var -----"
+            get_build_var "$var"
+          done
 
-echo "===== EXISTING BOOT IMAGE ====="
-ls -lh out/target/product/LXX525/boot.img 2>&1 || true
-          mka bootimage 
+          echo "===== AVAILABLE ROOT DIRECTORIES ====="
+          find out/target/product/LXX525 -maxdepth 2 -type d \
+            \( -name root -o -name ramdisk -o -name recovery \) -print
+
+          echo "===== EXISTING BOOT IMAGE ====="
+          ls -lh out/target/product/LXX525/boot.img 2>&1 || true
+
+          echo "===== BUILD BOOT IMAGE ====="
+          mka bootimage -j2
+
+          echo "===== VERIFY BOOT IMAGE ====="
+          test -s out/target/product/LXX525/boot.img
+          ls -lh out/target/product/LXX525/boot.img
+
           
 
       - name: Upload Recovery
