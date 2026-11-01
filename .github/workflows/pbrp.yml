@@ -72,6 +72,7 @@ jobs:
          ls -la device/lava/LXX525/recovery/root/
 
       
+      
       - name: Build Recovery
         run: |
           cd pbrp
@@ -81,7 +82,13 @@ jobs:
           source build/envsetup.sh
           lunch pb_LXX525-eng
 
-                  echo "===== RECOVERY BUILD DIAGNOSTICS ====="
+          echo "===== BUILD ENVIRONMENT ====="
+          pwd
+          echo "OUT_DIR=$OUT_DIR"
+          echo "ANDROID_PRODUCT_OUT=$ANDROID_PRODUCT_OUT"
+          echo "TARGET_PRODUCT=$TARGET_PRODUCT"
+
+          echo "===== RECOVERY BUILD DIAGNOSTICS ====="
 
           for var in \
             BOARD_USES_RECOVERY_AS_BOOT \
@@ -95,23 +102,11 @@ jobs:
           done
 
           echo "===== OUTPUT DIRECTORIES ====="
-          ls -lah out/target/product/LXX525/
+          ls -lah out/target/product/LXX525/ || true
 
           echo "===== ROOT DIRECTORY CHECK ====="
           find out/target/product/LXX525 -maxdepth 2 \
-            -type d \( -name root -o -name ramdisk -o -name recovery \)
-
-echo "===== BUILD ENVIRONMENT ====="
-pwd
-echo "OUT_DIR=$OUT_DIR"
-echo "ANDROID_PRODUCT_OUT=$ANDROID_PRODUCT_OUT"
-echo "TARGET_PRODUCT=$TARGET_PRODUCT"
-
-echo "===== OUTPUT LOCATION ====="
-find . -maxdepth 5 -type d -path "*/out/target/product/LXX525" 2>/dev/null
-
-echo "===== PRODUCT DIRECTORY ====="
-ls -lah out/target/product/ 2>/dev/null || true
+            -type d \( -name root -o -name ramdisk -o -name recovery \) || true
 
           mka pbrp -j2
 
