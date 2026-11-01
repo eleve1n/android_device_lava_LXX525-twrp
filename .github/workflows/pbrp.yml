@@ -73,7 +73,7 @@ jobs:
 
       
       
-            - name: Build Recovery
+       - name: Build Recovery
         run: |
           cd pbrp
           export ALLOW_MISSING_DEPENDENCIES=true
