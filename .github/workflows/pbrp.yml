@@ -81,7 +81,7 @@ jobs:
           source build/envsetup.sh
           lunch pb_LXX525-eng
 
-          echo "===== RECOVERY BUILD DIAGNOSTICS ====="
+                  echo "===== RECOVERY BUILD DIAGNOSTICS ====="
 
           for var in \
             BOARD_USES_RECOVERY_AS_BOOT \
@@ -101,11 +101,6 @@ jobs:
           find out/target/product/LXX525 -maxdepth 2 \
             -type d \( -name root -o -name ramdisk -o -name recovery \)
 
-          mka pbrp -j2
-
-echo "===== ROOT DIRECTORY CHECK ====="
-find out/target/product/LXX525 -maxdepth 2 \
-    -type d \( -name root -o -name ramdisk -o -name recovery \)
           mka pbrp -j2
 
       - name: Upload Recovery
